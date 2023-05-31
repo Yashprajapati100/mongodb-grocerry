@@ -16,9 +16,8 @@ class Auth {
             }
         } catch (error) {
             console.log('AUTH ERROR')
-            return ResponseHelper.error(error, res);
+            return ResponseController.error(error, res);
         }
     }
-
 }
 module.exports = new Auth(0);

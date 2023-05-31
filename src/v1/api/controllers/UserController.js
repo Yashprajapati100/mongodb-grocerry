@@ -22,6 +22,7 @@ class UserController {
       await validator.loginvalidation(req.body)
       var data = await UserService.login(req.body);
       if (data) {
+        data[0].auth_token = ''
         var token = jwt.sign({ data }, 'secretkey', { expiresIn: '100d' })
         data[0].auth_token = token;
         console.log("token=====>", token);
@@ -272,13 +273,73 @@ class UserController {
       var decodedData = jwt.verify(token, 'secretkey')
       var user = decodedData.data[0].user_id;
       var data = await UserService.order_details(req.body, user);
+
       return responseHelper.success(data, 'oders-details', res);
     } catch (error) {
       return responseHelper.error(error, res)
     }
   }
-
-}
+  async add_customer(req, res) {
+    try {
+      let token = req.headers.authorization;
+      var decodedData = jwt.verify(token, 'secretkey')
+      var user_id = decodedData.data[0].user_id;
+      var firstname = decodedData.data[0].firstname;
+      var lastname = decodedData.data[0].lastname;
+      var email = decodedData.data[0].email;
+      var data = await UserService.add_customer(user_id, firstname, lastname, email);
+      return responseHelper.success(data, 'add-customer', res);
+    } catch (error) {
+      return responseHelper.error(error, res);
+    }
+  }
+  async add_card(req, res) {
+    try {
+      var data = await UserService.add_card(req)
+      return responseHelper.success(data, 'add-card', res);
+    } catch (error) {
+      return responseHelper.error(error, res);
+    }
+  }
+  async create_charge(req, res) {
+    try {
+      var data = await UserService.create_charge(req)
+      return responseHelper.success(data, 'create-charge', res);
+    } catch (error) {
+      return responseHelper.error(error, res);
+    }
+  }
+  async aadd_customer(req, res) {
+    try {
+      let token = req.headers.authorization;
+      var decodedData = jwt.verify(token, 'secretkey')
+      var user_id = decodedData.data[0].user_id;
+      var firstname = decodedData.data[0].firstname;
+      var lastname = decodedData.data[0].lastname;
+      var email = decodedData.data[0].email;
+      var data = await UserService.aadd_customer(user_id, firstname, lastname, email);
+      return responseHelper.success(data, 'add-customer', res);
+    } catch (error) {
+      console.log('------>',error)
+      return responseHelper.error(error, res);
+    }
+  }
+  async added_card(req, res) {
+    try {
+      var data= await UserService.added_card(req);
+      return responseHelper.success(data, 'card-add', res);
+    } catch (error) {
+      return responseHelper.error(error, res);
+    }
+  }
+  async charge(req, res) {
+    try {
+      var data = await UserService.charge(req)
+      return responseHelper.success(data, 'create-charge', res);
+    } catch (error) {
+      return responseHelper.error(error, res);
+    }
+  }}
 module.exports = new UserController();
 
 

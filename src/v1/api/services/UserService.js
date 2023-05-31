@@ -1,9 +1,12 @@
-const { User, conn, UserDeviceToken, Category, SubCategory, Product, Brand, Add_cart, Wish_list, Address, Section, Section_slider, Section_product, Section_brand, Section_category, Review, Setting, Coupan, Orders, Order_item } = require('../../../data/models/index')
+const { User, conn, UserDeviceToken, Category, SubCategory, Product, Brand, Add_cart, Wish_list, Address, Section, Section_slider, Section_product, Section_brand, Section_category, Review, Setting, Coupan, Orders, Order_item, Customer, Card_details, Card_charge,Payment } = require('../../../data/models/index')
 const promise = require('bluebird')
 const ejs = require('ejs')
 const path = require('path')
 const helper = require('../../../utills/helper')
 const moment = require('moment')
+const Publishable_Key = "pk_test_51NCyx5SJb1N6yFiBEyUzWfYEP7Zc7QZPCyNrxpyxmtnjAWUTOamTzBzz9Ycv24BL9ZK5YZ8HWecyerfaLOX9zJwf00xCZoXZJE"
+const SECRET_KEY = "sk_test_51ND512C9L1H5XcY2uEBdSAC3svG3nZAjs1JCosze8alwoYkYCYDHcJIFDJBVu11MBe9YPPOa1J39KA5laUMd7pEB00Wjf01UdN"
+const stripe = require("stripe")(SECRET_KEY);
 const {
   resolve
 } = require('path')
@@ -1015,6 +1018,148 @@ class UserService {
     } catch (error) {
       return reject(error);
     }
+  }
+  async add_customer(user_id, firstname, lastname, email) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        var data = await Customer.create({
+          name: firstname.concat(lastname),
+          email: email,
+          user_id: user_id
+        })
+        const customer = await stripe.customers.create({
+          name: firstname.concat(lastname),
+          email: email
+        })
+        var insertw = await Customer.updateOne({ email: email }, { $set: { customer_stripe_id: customer.id } })
+        return resolve(customer);
+      } catch (error) {
+        return reject(error);
+      }
+    })
+  }
+  async add_card(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let { customer_stripe_id, card_Name, card_ExpYear, card_ExpMonth, card_Number, card_CVC } = req.body
+
+        var data = await Card_details.create({
+          customer_stripe_id: customer_stripe_id,
+          card_Name: card_Name,
+          card_Number: card_Number,
+          card_ExpYear: card_ExpYear,
+          card_ExpMonth: card_ExpMonth,
+          card_CVC: card_CVC,
+
+        })
+        var data = await stripe.tokens.create({
+          card: {
+            name: card_Name,
+            number: card_Number,
+            exp_year: card_ExpYear,
+            exp_month: card_ExpMonth,
+            cvc: card_CVC
+          }
+        });
+        var card = await stripe.customers.createSource(customer_stripe_id, {
+          source: `${data.id}`
+        })
+        var data = await Card_details.updateOne({ customer_stripe_id: req.body.customer_stripe_id }, { $set: { token: data.id, card_id: card.id } })
+        return resolve({ card: card.id })
+      } catch (error) {
+        return reject(error);
+      }
+    })
+  }
+  async create_charge(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        var data = await Card_charge.create({
+          customer_stripe_id: req.body.customer_stripe_id,
+          card_id: req.body.card_id,
+          amount: req.body.amount
+        })
+        var insert = await stripe.charges.create({
+          receipt_email: "tester@gmail.com",
+          amount: req.body.amount,
+          currency: 'inr',
+          card: req.body.card_id,
+          customer: req.body.customer_stripe_id
+        })
+        return resolve(insert);
+      } catch (error) {
+        return reject(error);
+      }
+    })
+  }
+  async aadd_customer(user_id,firstname,lastname,email) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const customer = await stripe.customers.create({
+          name: firstname.concat(lastname),
+          email: email
+        })
+        var data = await Payment.create({
+          customer_stripe_id:customer.id,
+          user_id: user_id
+        })
+        return resolve(customer);
+      } catch (error) {
+        return reject(error);
+      }
+    })
+  }
+  async added_card(req) {
+    return new promise(async (resolve, reject) => {
+      try {
+        let { customer_stripe_id, card_Name, card_ExpYear, card_ExpMonth, card_Number, card_CVC } = req.body
+
+        var data = await Payment.updateOne({customer_stripe_id:customer_stripe_id},{$set:{
+          card_Name: card_Name,
+          card_Number: card_Number,
+          card_ExpYear: card_ExpYear,
+          card_ExpMonth: card_ExpMonth,
+          card_CVC: card_CVC,
+
+        }}
+        )
+        var data = await stripe.tokens.create({
+          card: {
+            name: card_Name,
+            number: card_Number,
+            exp_year: card_ExpYear,
+            exp_month: card_ExpMonth,
+            cvc: card_CVC
+          }
+        });
+        var card = await stripe.customers.createSource(customer_stripe_id, {
+          source: `${data.id}`
+        })
+        var data = await Payment.updateOne({ customer_stripe_id:customer_stripe_id }, { $set: { token: data.id, card_id: card.id } })
+        return resolve({ card: card.id })
+      } catch (error) {
+        return reject(error);
+      }
+    })
+  }
+  async charge(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        var data = await Payment.updateOne(
+          {customer_stripe_id:req.body.customer_stripe_id},{$set:{amount: req.body.amount}
+        })
+        var insert = await stripe.charges.create({
+          receipt_email: "tester@gmail.com",
+          amount: req.body.amount,
+          currency: 'inr',
+          card: req.body.card_id,
+          customer: req.body.customer_stripe_id
+        })
+        return resolve(insert);
+      } catch (error) {
+        return reject(error);
+      }
+    })
   }
 }
 module.exports = new UserService();
