@@ -84,15 +84,11 @@ router.post('/orders-details', authMiddleware.authenticate, UserController.order
 router.post('/add-customer', authMiddleware.authenticate, UserController.add_customer);
 
 
-router.post('/add-card', UserController.add_card);
+router.post('/add-card', authMiddleware.authenticate, UserController.add_card);
 
-router.post('/create-charge', UserController.create_charge);
+router.post('/create-charge', authMiddleware.authenticate, UserController.create_charge);
 
-router.post('/add_customer',authMiddleware.authenticate,UserController.aadd_customer);
 
-router.post('/add_card',UserController.added_card);
-
-router.post('/charge',UserController.charge);
 
 
 module.exports = router;

@@ -8,25 +8,35 @@ module.exports = (mongoose) => {
             type: Schema.Types.ObjectId,
             default: new ObjectId()
         },
-        card_id: {
+        charge_id: {
             type: String,
             required: false,
             default: ''
         },
-        customer_stripe_id: {
-            type: String,
-            required: false,
-            default: ''
+        user_id: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
         },
-        amount:{
+        amount: {
             type: Number,
             required: false,
             default: ''
         },
-    }, { 
+        date: {
+            type:Date,
+            required: false,
+            default: ''
+        },
+        currency: {
+            type: String,
+            required: false,
+            default: ''
+        },
+
+    }, {
         timestamps: true,
         // _id : false   
-    })  
+    })
 
     return mongoose.model('Card_charge', card_chargeSchema, 'card_charge')
 }  

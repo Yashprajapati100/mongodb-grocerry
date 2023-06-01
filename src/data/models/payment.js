@@ -47,13 +47,8 @@ module.exports = (mongoose) => {
             required: false,
             default: ''
         },
-        token:{
+        source:{
             type: String,
-            required: false,
-            default: ''
-        },
-        amount:{
-            type: Number,
             required: false,
             default: ''
         }
