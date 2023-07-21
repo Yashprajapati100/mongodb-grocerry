@@ -28,7 +28,7 @@ router.post('/order-details', ordercontroller.orders_details);
 // user api
 router.post('/user-list', admincontroller.user_list);
 router.post('/user-details', admincontroller.user_details);
-
+    
 //category-crud api
 router.post('/insert-category', uploades.single("image"), CategoryController.insert_category);
 router.post('/update-category', uploades.single("image"), CategoryController.update_category);

@@ -173,7 +173,7 @@ class UserService {
         return resolve(product)
       })
     } catch (error) {
-      return reject(error);
+      return reject(error);  
     }
   }
 
@@ -782,12 +782,12 @@ class UserService {
 
   //user checkout and total amount
   async check_out(body, user_id) {
-    try {
+    try { 
       return new Promise(async (resolve, reject) => {
         let { address_id, coupan_id } = body
         var address = await Address.find({ user_id: user_id, address_id: address_id })
         var cod = "COD"
-        var data = await this.cart(user_id, body)
+        var data = await this.cart(user_id, body) 
         var date = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
         var check = await Add_cart.find({ user_id: user_id })
 
